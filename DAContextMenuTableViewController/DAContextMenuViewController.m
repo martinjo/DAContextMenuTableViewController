@@ -1,6 +1,6 @@
-#import "DAContextMenuTableViewController.h"
+	#import "DAContextMenuViewController.h"
 
-@interface DAContextMenuTableViewController () <DAOverlayViewDelegate>
+@interface DAContextMenuViewController () <DAOverlayViewDelegate>
 
 @property (strong, nonatomic) DAContextMenuCell *cellDisplayingMenuOptions;
 @property (strong, nonatomic) DAOverlayView *overlayView;
@@ -12,19 +12,21 @@
 @end
 
 
-@implementation DAContextMenuTableViewController
+@implementation DAContextMenuViewController
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.customEditing = self.customEditingAnimationInProgress = NO;
+    [self setCustomEditing:NO];
+    [self setCustomEditingAnimationInProgress:NO];
+//    self.customEditing = self.customEditingAnimationInProgress = NO;
 }
 
 #pragma mark - Public
 
 - (void)hideMenuOptionsAnimated:(BOOL)animated
 {
-    __block DAContextMenuTableViewController *weakSelf = self;
+    __block DAContextMenuViewController *weakSelf = self;
     [self.cellDisplayingMenuOptions setMenuOptionsViewHidden:YES animated:animated completionHandler:^{
         weakSelf.customEditing = NO;
     }];
@@ -39,10 +41,10 @@
         self.tableView.scrollEnabled = !customEditing;
         if (customEditing) {
             if (!_overlayView) {
-                _overlayView = [[DAOverlayView alloc] initWithFrame:self.view.bounds];
+                _overlayView = [[DAOverlayView alloc] initWithFrame:self.tableView.frame];
                 _overlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
                 _overlayView.backgroundColor = [UIColor clearColor];
-                _overlayView.delegate = self;
+                 _overlayView.delegate = self;
             }
             self.overlayView.frame = self.view.bounds;
             [self.view addSubview:_overlayView];
@@ -64,8 +66,6 @@
         }
     }
 }
-
-#pragma mark * DAContextMenuCell delegate
 
 - (void)contextMenuCell:(DAContextMenuCell *)cell buttonTappedAtIndex:(NSUInteger)index
 {
@@ -104,8 +104,10 @@
 
 - (UIView *)overlayView:(DAOverlayView *)view didHitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
-    BOOL shouldIterceptTouches = CGRectContainsPoint([self.view convertRect:self.cellDisplayingMenuOptions.frame toView:self.view],
-                                                     [self.view convertPoint:point fromView:view]);
+    CGRect rect = [self.tableView convertRect:self.cellDisplayingMenuOptions.frame toView:self.tableView];
+    CGPoint rectpoint = [self.tableView convertPoint:point fromView:view];
+    
+    BOOL shouldIterceptTouches = CGRectContainsPoint(rect,rectpoint);
     if (!shouldIterceptTouches) {
         [self hideMenuOptionsAnimated:YES];
     }
@@ -122,5 +124,7 @@
     }
     return YES;
 }
+
+
 
 @end
